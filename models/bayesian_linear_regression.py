@@ -15,5 +15,15 @@ class BayesianLinearRegression(object):
         self.posterior_covariance = np.linalg.inv(self.posterior_precision)
         self.posterior_mean = self.posterior_covariance.dot(prior_precision).dot(prior_mean) + (self.posterior_covariance.dot(X.T).dot(y)) / self.s2y
 
-    def predict(self, inputs):
-        return inputs.dot(self.posterior_mean)
+    def predictive_params(self, X):
+        means = X.dot(self.posterior_mean)
+        vars = X.dot(self.posterior_covariance).dot(X.T).diagonal() + self.s2y
+        return means, vars
+
+    def predict_interval(self, X):
+        means, vars = self.predictive_params(X)
+        stds = vars ** 0.5
+        return means - stds, means, means + stds
+
+    def predict(self, X):
+        return X.dot(self.posterior_mean)

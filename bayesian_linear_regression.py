@@ -21,4 +21,5 @@ regressor.update(x_train, y_train)
 
 print("Model weights: ", regressor.posterior_mean, regressor.posterior_covariance)
 print("Model fit: ", regressor.predict(x_test))
+print("Model interval: ", regressor.predict_interval(x_test))
 print("Y test: ", y_test)
