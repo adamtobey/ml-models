@@ -4,7 +4,6 @@ It's a learning exercise for implementing and visualizing common machine learnin
 
 # Todo
 - Implement models
-  - Linear regression
   - Logistic regression
   - Softmax regression
   - Naive bayes
