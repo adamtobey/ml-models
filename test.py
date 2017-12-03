@@ -1,13 +1,13 @@
-from models.linear_regression import LinearRegression
+from models.linear_regression import LinearRegression, ScalarBasisFunctions
 import numpy as np
 
-regressor = LinearRegression()
+regressor = LinearRegression(basis_function=ScalarBasisFunctions.Polynomial(2))
 
-x_train = np.array([[1, 0], [1, 1], [1, 2]])
-y_train = np.array([3, 5, 7])
+x_train = np.arange(4)
+y_train = x_train ** 2 + x_train + 3
 
-x_test = np.array([[1, 5], [1, 6]])
-y_test = np.array([13, 15])
+x_test = np.arange(4, 6)
+y_test = x_test ** 2 + x_test + 3
 
 regressor.fit(x_train, y_train)
 
