@@ -1,0 +1,19 @@
+import numpy as np
+
+class BayesianLinearRegression(object):
+
+    def __init__(self, prior_mean, prior_covariance, s2y=0.1):
+        self.posterior_mean = prior_mean
+        self.posterior_covariance = prior_covariance
+        self.posterior_precision = np.linalg.inv(prior_covariance)
+        self.s2y = s2y
+
+    def update(self, X, y):
+        prior_precision = self.posterior_precision
+        prior_mean = self.posterior_mean
+        self.posterior_precision = (self.s2y * prior_precision + X.T.dot(X)) / self.s2y
+        self.posterior_covariance = np.linalg.inv(self.posterior_precision)
+        self.posterior_mean = self.posterior_covariance.dot(prior_precision).dot(prior_mean) + (self.posterior_covariance.dot(X.T).dot(y)) / self.s2y
+
+    def predict(self, inputs):
+        return inputs.dot(self.posterior_mean)
