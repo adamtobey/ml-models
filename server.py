@@ -3,6 +3,7 @@ from plots.linear_regression import InteractiveLinearRegression
 from models.linear_regression import LinearRegression
 
 regressor = LinearRegression()
-plot = InteractiveLinearRegression(regressor)
+data = dict(x=[1], y=[1])
+plot = InteractiveLinearRegression(data, regressor)
 
 plot.render(curdoc())

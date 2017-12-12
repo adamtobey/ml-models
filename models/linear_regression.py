@@ -3,7 +3,7 @@ from linear_basis_functions import ScalarBasisFunctions
 
 class LinearRegression(object):
 
-    def __init__(self, basis_function=ScalarBasisFunctions.Identity(), l2_cost=None):
+    def __init__(self, basis_function=ScalarBasisFunctions.Polynomial(1), l2_cost=None):
         self.weights = None
         self.basis_function = basis_function
         self.l2_cost = l2_cost

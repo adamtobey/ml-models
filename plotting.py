@@ -3,12 +3,12 @@ from bokeh.models.callbacks import CustomJS
 
 class InteractivePlot(object):
 
-    def __init__(self):
-        self.figure = self._initialize_figure()
+    def __init__(self, data=dict(x=[], y=[])):
+        self._initialize_figure(data)
 
-    def _initialize_figure(self):
+    def _initialize_figure(self, data):
         self.figure = figure(x_range=(0,10), y_range=(0,10), toolbar_location=None)
-        self.scatter = self.figure.scatter(x=[], y=[])
+        self.scatter = self.figure.scatter(**data)
         data_source = self.scatter.data_source
         self.figure.js_on_event('tap', CustomJS(args=dict(source=data_source), code="""
             var data = {
