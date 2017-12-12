@@ -27,11 +27,9 @@ x_test = np.array([
 
 y_test = np.array([0, 1])
 
-data_provider = BasicDataProvider(inputs, targets)
-
 classifier = LogisticRegression()
 
-classifier.fit(data_provider, 50)
+classifier.fit(x_test, y_test, 50)
 
 
 print("Predictions: ", classifier.predict(x_test))

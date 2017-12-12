@@ -1,15 +1,14 @@
 import numpy as np
-from optimizers import SGDOptimizer
-from design_matrices import DesignMatrixTransformer, Regularizers, BasisFunctions
+from optimizers import GradientDescentOptimizer
+from linear_basis_functions import BasisFunctions
 
 class LogisticRegression(object):
 
-    def __init__(self, optimizer=SGDOptimizer(learning_rate=0.1), basis_function=BasisFunctions.Affine()):
+    def __init__(self, optimizer=GradientDescentOptimizer(learning_rate=0.1), basis_function=BasisFunctions.Affine()):
         self.optimizer = optimizer
         self.weights = None
-        self.weights_init = lambda s: np.random.rand(*s) * 0.1
-        # TODO this regularization only works with least squares
-        self.transformer = DesignMatrixTransformer(basis_function=basis_function, regularizer=regularizer)
+        self.weights_init = lambda d: np.random.rand(d) * 0.1
+        self.basis_function = basis_function
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
@@ -24,12 +23,10 @@ class LogisticRegression(object):
         z = 2 * targets - 1
         return -np.sum(((1 - pred) * z).reshape(-1, 1) * batch, axis=0)
 
-    def fit(self, data_provider, num_epochs):
-        print(num_epochs)
-        data = self.transformer.train(data_provider)
-        shape = self.transformer.shape(data_provider)
-        self.weights = self.optimizer.opt(data, self.weights_init(shape), self.cost, self.cost_grad, num_epochs)
+    def fit(self, X, y, num_epochs):
+        X = self.basis_function(X)
+        self.weights = self.optimizer.opt(X, y, self.weights_init(X.shape[1]), self.cost, self.cost_grad, num_epochs)
 
-    def predict(self, inputs):
+    def predict(self, X):
         assert self.weights is not None, "Model must be trained before predicting"
-        return self.sigmoid(self.transformer.make_design_matrix(inputs).dot(self.weights))
+        return self.sigmoid(self.basis_function(X).dot(self.weights))
