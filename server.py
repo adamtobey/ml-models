@@ -1,10 +1,10 @@
 from bokeh.plotting import curdoc
-from plots.bayesian_linear_regression import InteractiveBayesianLinearRegression
-from models.bayesian_linear_regression import BayesianLinearRegression
+from plots.gaussian_process import InteractiveGaussianProcess
+from models.gaussian_process import GaussianProcessRegression, Kernels
 import numpy as np
 
-regressor = BayesianLinearRegression(prior_mean=np.zeros((2,)), prior_covariance=0.4*np.identity(2))
+regressor = GaussianProcessRegression(kernel=Kernels.GaussianKernel(1.2, np.array([0.5])))
 data = dict(x=[1], y=[1])
-plot = InteractiveBayesianLinearRegression(data, regressor)
+plot = InteractiveGaussianProcess(data, regressor)
 
 plot.render(curdoc())
