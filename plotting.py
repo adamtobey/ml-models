@@ -1,5 +1,6 @@
 from bokeh.plotting import figure
 from bokeh.models.callbacks import CustomJS
+from bokeh.layouts import row, column
 
 class InteractivePlot(object):
 
@@ -34,3 +35,20 @@ class InteractivePlot(object):
 
     def render(self, doc):
         doc.add_root(self.figure)
+
+class InteractiveParametricPlot(InteractivePlot):
+
+    def __init__(self, data=dict(x=[], y=[])):
+        self.params = self.parameters()
+        for name, param in self.params.items():
+            param.on_change('value', self.update_param)
+        super().__init__(data)
+
+    def update_param(self, attr, old, new):
+        self.update_figure(self.figure, self.scatter, new, old)
+
+    def parameters(self):
+        return {}
+
+    def render(self, doc):
+        doc.add_root(row(self.figure, column(*self.params.values())))
