@@ -31,6 +31,13 @@ class GaussianProcessRegression(object):
         self.i_cov = np.linalg.inv(kk + si)
         self.obs = X, y
 
+    def predictive_params(self, X):
+        oX, oy = self.obs
+        a = self.K(X, oX).dot(self.i_cov)
+        mean = a.dot(oy)
+        cov = self.K(X, X) - a.dot(self.K(oX, X))
+        return mean, cov.diagonal()
+
     def predict(self, X):
         assert self.obs is not None, "Model must be fit before predicting"
         oX, oy = self.obs
