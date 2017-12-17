@@ -8,7 +8,7 @@ class BayesianLinearRegression(object):
         self.posterior_precision = np.linalg.inv(prior_covariance)
         self.s2y = s2y
 
-    def update(self, X, y):
+    def fit(self, X, y):
         prior_precision = self.posterior_precision
         prior_mean = self.posterior_mean
         self.posterior_precision = (self.s2y * prior_precision + X.T.dot(X)) / self.s2y

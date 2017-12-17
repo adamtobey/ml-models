@@ -17,7 +17,7 @@ x_test = np.array([
 ])
 y_test = np.array([11, 13])
 
-regressor.update(x_train, y_train)
+regressor.fit(x_train, y_train)
 
 print("Model weights: ", regressor.posterior_mean, regressor.posterior_covariance)
 print("Model fit: ", regressor.predict(x_test))
