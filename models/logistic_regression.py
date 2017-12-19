@@ -19,9 +19,9 @@ class LogisticRegression(object):
         return -np.sum(np.log(self.sigmoid(z * affine)), axis=0)
 
     def cost_grad(self, batch, targets, weights):
-        pred = self.sigmoid(batch.dot(weights))
         z = 2 * targets - 1
-        return -np.sum(((1 - pred) * z).reshape(-1, 1) * batch, axis=0)
+        sn = self.sigmoid(z * batch.dot(weights))
+        return -np.sum(((1 - sn) * z).reshape(-1, 1) * batch, axis=0)
 
     def fit(self, X, y, num_epochs):
         X = self.basis_function(X)
