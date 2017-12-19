@@ -9,9 +9,6 @@ class InteractiveBayesianPolynomialRegression(InteractiveParametricPlot):
     # TODO
     LINE_ENDPOINTS = np.arange(0, 10, 0.1)
 
-    def __init__(self, data):
-        super().__init__(data)
-
     def parameters(self):
         params = {}
         params['degree'] = Slider(value=1, start=0, end=15, step=1, title="Polynomial Degree")

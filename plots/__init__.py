@@ -1,0 +1,4 @@
+from plots.bayesian_polynomial_regression import InteractiveBayesianPolynomialRegression
+from plots.polynomial_regression import InteractivePolynomialRegression
+from plots.gaussian_process import InteractiveGaussianProcess
+from plots.logistic_regression import InteractiveLogisticRegression

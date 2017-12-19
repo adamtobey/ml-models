@@ -20,5 +20,8 @@ class BasisFunctions(object):
     def Affine():
         def affine(x):
             xd = x.shape[0]
-            return np.concatenate([np.ones((xd, 1)), x], axis=1)
+            if xd == 0:
+                return np.zeros((0, 0))
+            else:
+                return np.concatenate([np.ones((xd, 1)), x], axis=1)
         return affine

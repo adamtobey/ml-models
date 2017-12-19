@@ -8,9 +8,6 @@ class InteractiveGaussianProcess(InteractiveParametricPlot):
     # TODO
     LINE_ENDPOINTS = np.arange(0, 10, 0.1)
 
-    def __init__(self, data):
-        super().__init__(data)
-
     def parameters(self):
         params = {}
         params['l'] = Slider(value=0.5, start=0.1, end=5, step=0.1, title="Kernel Width")

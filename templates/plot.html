@@ -1,0 +1,23 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ model_name }}</title>
+</head>
+
+<body>
+  <div>
+    <ul>
+      {% for route, (name, _) in routes.items() %}
+        <li>
+          <a href="{{ route }}">{{ name|escape }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div>
+    {{ script|safe }}
+  </div>
+</body>
+</html>

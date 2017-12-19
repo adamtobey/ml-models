@@ -9,6 +9,7 @@ name = "pypi"
 
 numpy = "*"
 bokeh = "*"
+flask = "*"
 
 
 [dev-packages]

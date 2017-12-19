@@ -8,7 +8,7 @@ class InteractiveLogisticRegression(MulticlassParametricPlot):
 
     LINE_ENDPOINTS = np.array([-1, 1]) * 1000
 
-    def __init__(self, data):
+    def __init__(self, data=[dict(x=[], y=[]), dict(x=[], y=[])]):
         super().__init__(data)
 
     def make_scatters(self, data):
@@ -31,13 +31,14 @@ class InteractiveLogisticRegression(MulticlassParametricPlot):
         X = np.array(X)
         y = np.array(y)
 
-        classifier = LogisticRegression()
-        classifier.fit(X, y, 100)
+        if X.shape[0] != 0:
+            classifier = LogisticRegression()
+            classifier.fit(X, y, 100)
 
-        b, w1, w2 = classifier.weights
-        x_bound = self.LINE_ENDPOINTS
-        y_bound = -(w1 * x_bound + b) / w2
-        self.decision_boundary.data_source.data = dict(x=x_bound, y=y_bound)
+            b, w1, w2 = classifier.weights
+            x_bound = self.LINE_ENDPOINTS
+            y_bound = -(w1 * x_bound + b) / w2
+            self.decision_boundary.data_source.data = dict(x=x_bound, y=y_bound)
 
     def initialize_figure(self, figure, scatters):
         self.decision_boundary = figure.line(x=[], y=[])
