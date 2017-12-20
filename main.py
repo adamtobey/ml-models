@@ -1,5 +1,7 @@
-from flask import Flask, render_template
+import os
+import logging
 from threading import Thread
+from flask import Flask, render_template
 
 from bokeh.embed import server_document
 from bokeh.server.server import Server
@@ -7,6 +9,15 @@ from bokeh.server.server import Server
 from plots import InteractivePolynomialRegression, InteractiveGaussianProcess, InteractiveBayesianPolynomialRegression, InteractiveLogisticRegression
 
 app = Flask(__name__)
+
+
+HTTP_PORT = int(os.environ.get("PORT", 8000))
+BOKEH_PORT = int(os.environ.get("BOKEH_PORT", 5006))
+HOSTNAME = os.environ.get("HOSTNAME", "localhost")
+
+
+logging.warning("HTTP_PORT: {}, BOKEH_PORT: {}, HOSTNAME: {}".format(HTTP_PORT, BOKEH_PORT, HOSTNAME))
+
 
 plot_pages = dict(
     linear_regression=("Polynomial Regression", InteractivePolynomialRegression),
@@ -34,7 +45,7 @@ for route, (name, Plot) in plot_pages.items():
 
 def bokeh_worker(routes):
     def worker():
-        server = Server(routes, allow_websocket_origin=["localhost:8000"], port=5006)
+        server = Server(routes, allow_websocket_origin=["{}:{}".format(HOSTNAME, HTTP_PORT)], port=BOKEH_PORT)
         server.start()
         server.io_loop.start()
     return worker
@@ -42,4 +53,4 @@ def bokeh_worker(routes):
 Thread(target = bokeh_worker(bokeh_routes)).start()
 
 if __name__ == '__main__':
-    app.run(port=8000)
+    app.run(port=HTTP_PORT)
