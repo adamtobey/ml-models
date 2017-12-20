@@ -9,7 +9,8 @@ name = "pypi"
 
 numpy = "*"
 bokeh = "*"
-flask = "*"
+tornado = "*"
+"jinja2" = "*"
 
 
 [dev-packages]

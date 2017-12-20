@@ -1,23 +1,18 @@
 import os
-import logging
-from threading import Thread
-from flask import Flask, render_template
+
+from jinja2 import Environment, FileSystemLoader
+from tornado.web import RequestHandler
 
 from bokeh.embed import server_document
 from bokeh.server.server import Server
 
 from plots import InteractivePolynomialRegression, InteractiveGaussianProcess, InteractiveBayesianPolynomialRegression, InteractiveLogisticRegression
 
-app = Flask(__name__)
-
 
 HTTP_PORT = int(os.environ.get("PORT", 8000))
-BOKEH_PORT = int(os.environ.get("BOKEH_PORT", 5006))
-HOSTNAME = os.environ.get("HOSTNAME", "localhost")
+HOST_URL = os.environ.get("HOST_URL", "http://localhost:{}".format(HTTP_PORT))
 
-
-logging.warning("HTTP_PORT: {}, BOKEH_PORT: {}, HOSTNAME: {}".format(HTTP_PORT, BOKEH_PORT, HOSTNAME))
-
+env = Environment(loader=FileSystemLoader("templates"))
 
 plot_pages = dict(
     linear_regression=("Polynomial Regression", InteractivePolynomialRegression),
@@ -27,30 +22,40 @@ plot_pages = dict(
 )
 
 bokeh_routes = {}
+page_routes = {}
+
+def bokeh_route(route):
+    return "/plots/{}".format(route)
+
+def page_route(route):
+    return "/{}".format(route)
 
 def make_bokeh_route(Plot):
     def make_plot(doc):
         Plot().render(doc)
     return make_plot
 
-def make_flask_route(route, name):
-    @app.route("/{}".format(route), methods=["GET"], endpoint=route)
-    def make_page():
-        script = server_document("http://localhost:5006/plots/{}".format(route))
-        return render_template("plot.html", model_name=name, routes=plot_pages, script=script, template="Flask")
+def make_page_route(name, route):
+    global env, HOST_URL, plot_pages
+    class PageRoute(RequestHandler):
+        def get(self):
+            template = env.get_template("plot.html")
+            script = server_document(HOST_URL + bokeh_route(route))
+            self.write(template.render(script=script, model_name=name, routes=plot_pages))
+    return PageRoute
 
 for route, (name, Plot) in plot_pages.items():
-    bokeh_routes["/plots/{}".format(route)] = make_bokeh_route(Plot)
-    make_flask_route(route, name)
+    bokeh_routes[bokeh_route(route)] = make_bokeh_route(Plot)
+    page_routes[page_route(route)] = make_page_route(name, route)
 
-def bokeh_worker(routes):
-    def worker():
-        server = Server(routes, allow_websocket_origin=["{}:{}".format(HOSTNAME, HTTP_PORT)], port=BOKEH_PORT)
-        server.start()
-        server.io_loop.start()
-    return worker
-
-Thread(target = bokeh_worker(bokeh_routes)).start()
+server = Server(
+    bokeh_routes,
+    extra_patterns=list(page_routes.items()),
+    port=HTTP_PORT,
+    allow_websocket_origin=["calm-cliffs-70784.herokuapp.com"]
+)
+server.start()
 
 if __name__ == '__main__':
-    app.run(port=HTTP_PORT)
+    print("Starting the server on port {}".format(HTTP_PORT))
+    server.io_loop.start()
