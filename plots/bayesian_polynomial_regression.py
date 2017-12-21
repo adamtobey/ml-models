@@ -1,52 +1,53 @@
-from plotting import InteractiveParametricPlot
 import numpy as np
-from models.bayesian_linear_regression import BayesianLinearRegression
+
+from plotting import SingleClassPlot, ParametricPlotContainer, X_RANGE
 from linear_basis_functions import ScalarBasisFunctions
-from bokeh.models.widgets import Slider
+from models.bayesian_linear_regression import BayesianLinearRegression
 
-class InteractiveBayesianPolynomialRegression(InteractiveParametricPlot):
+class InteractiveBayesianPolynomialRegression(SingleClassPlot):
 
-    # TODO
-    LINE_ENDPOINTS = np.arange(0, 10, 0.1)
+    PLOT_POINTS = 150
 
-    def parameters(self):
-        params = {}
-        params['degree'] = Slider(value=1, start=0, end=15, step=1, title="Polynomial Degree")
-        params['prior_variance'] = Slider(value=0.4, start=0.01, end=2, step=0.01, title="Prior Variance")
-        params['s2y'] = Slider(value=0.1, start=0.01, end=2, step=0.01, title="Noise Variance")
-        return params
+    def __init__(self):
+        self.plot = SingleClassPlot()
+        self.container = ParametricPlotContainer(self.plot)
 
-    def update(self, X_train, y_train):
-        degree, prior_variance, s2y = [self.params[k].value for k in ['degree', 'prior_variance', 's2y']]
+        self.container.slider(value=1, start=0, end=15, step=1, title="Polynomial Degree")
+        self.container.slider(value=0.4, start=0.01, end=5, step=0.01, title="Prior Variance")
+        self.container.slider(value=0.1, start=0.01, end=5, step=0.01, title="Noise Variance")
 
-        basis = ScalarBasisFunctions.Polynomial(degree)
-        X_predict = basis(self.LINE_ENDPOINTS)
+        self.point_estimate = self.plot.figure.line(x=[], y=[])
+        self.uncertainty_range = self.plot.figure.patch(x=[], y=[], fill_alpha=0.5)
 
-        regressor = BayesianLinearRegression(prior_mean=np.zeros((degree + 1,)), prior_covariance=prior_variance*np.identity(degree + 1), s2y=s2y)
+        self.plot.enable_interaction()
+        self.plot.add_change_listener(self.update_plot)
 
-        regressor.fit(basis(X_train), y_train)
+    def update_plot(self, plot_state):
+        inputs = np.linspace(*X_RANGE, self.PLOT_POINTS)
+        basis = ScalarBasisFunctions.Polynomial(plot_state['Polynomial Degree'])
+        X_predict = basis(inputs)
+
+        regressor = BayesianLinearRegression(
+            prior_mean = np.zeros((plot_state['Polynomial Degree'] + 1,)),
+            prior_covariance = plot_state['Prior Variance'] * np.identity(plot_state['Polynomial Degree'] + 1),
+            s2y = plot_state['Noise Variance']
+        )
+
+        data = plot_state['inputs']
+        regressor.fit(basis(np.array(data['x'])), np.array(data['y']))
         means, vars = regressor.predictive_params(X_predict)
 
         # Point estimate
-        x_fit, y_fit = self.LINE_ENDPOINTS, means
+        x_fit, y_fit = inputs, means
         self.point_estimate.data_source.data = dict(x=x_fit, y=y_fit)
 
         # Uncertainty range
         x_range, y_range = [], []
-        x_range.extend(self.LINE_ENDPOINTS)
+        x_range.extend(inputs)
         y_range.extend(means + vars)
-        x_range.extend(reversed(self.LINE_ENDPOINTS))
+        x_range.extend(reversed(inputs))
         y_range.extend(reversed(means - vars))
         self.uncertainty_range.data_source.data = dict(x=x_range, y=y_range)
 
-    def initialize_figure(self, figure, scatter):
-        data = scatter.data_source.data
-        X, y = np.array(data['x']), np.array(data['y'])
-        self.point_estimate = figure.line(x=[], y=[])
-        self.uncertainty_range = figure.patch(x=[], y=[], fill_alpha=0.5)
-        self.update(X, y)
-
-    def update_figure(self, figure, scatter, new, old):
-        data = scatter.data_source.data
-        X, y = np.array(data['x']), np.array(data['y'])
-        self.update(X, y)
+    def render(self, doc):
+        doc.add_root(self.container.drawable())

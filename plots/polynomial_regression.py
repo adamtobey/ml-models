@@ -1,31 +1,35 @@
-from plotting import InteractiveParametricPlot
-from models.linear_regression import LinearRegression
-from linear_basis_functions import ScalarBasisFunctions
-from bokeh.models.widgets import Slider
 import numpy as np
 
-class InteractivePolynomialRegression(InteractiveParametricPlot):
+from plotting import SingleClassPlot, ParametricPlotContainer, X_RANGE
+from linear_basis_functions import ScalarBasisFunctions
+from models.linear_regression import LinearRegression
 
-    LINE_ENDPOINTS = np.arange(0, 10, 0.1)
+class InteractivePolynomialRegression(SingleClassPlot):
 
-    def parameters(self):
-        params = {}
-        params['degree'] = Slider(value=1, start=0, end=15, step=1, title="Polynomial Degree")
-        params['l2_cost'] = Slider(value=0, start=0, end=10, step=0.1, title="L2 Weight Penalty")
-        return params
+    PLOT_POINTS = 150
 
-    def fit(self, scatter):
-        data = scatter.data_source.data
+    def __init__(self):
+        self.plot = SingleClassPlot()
+        self.container = ParametricPlotContainer(self.plot)
+
+        self.container.slider(value=1, start=0, end=15, step=1, title="Polynomial Degree")
+        self.container.slider(value=0, start=0, end=10, step=0.1, title="L2 Weight Penalty")
+
+        self.fit_line = self.plot.figure.line(x=[], y=[])
+
+        self.plot.enable_interaction()
+        self.plot.add_change_listener(self.update_plot)
+
+    def update_plot(self, plot_state):
+        data = plot_state['inputs']
         X, y = np.array(data['x']), np.array(data['y'])
-        degree, l2_cost = [self.params[k].value for k in ['degree', 'l2_cost']]
-        regressor = LinearRegression(basis_function=ScalarBasisFunctions.Polynomial(degree), l2_cost=l2_cost)
+        regressor = LinearRegression(
+            basis_function = ScalarBasisFunctions.Polynomial(plot_state['Polynomial Degree']),
+            l2_cost = plot_state['L2 Weight Penalty']
+        )
         regressor.fit(X, y)
-        return self.LINE_ENDPOINTS, regressor.predict(self.LINE_ENDPOINTS)
+        inputs = np.linspace(*X_RANGE, self.PLOT_POINTS)
+        self.fit_line.data_source.data = dict(x=inputs, y=regressor.predict(inputs))
 
-    def initialize_figure(self, figure, scatter):
-        x, y = self.fit(scatter)
-        self.fit_line = figure.line(x=x, y=y)
-
-    def update_figure(self, figure, scatter, a, b):
-        x, y = self.fit(scatter)
-        self.fit_line.data_source.data = dict(x=x, y=y)
+    def render(self, doc):
+        doc.add_root(self.container.drawable())

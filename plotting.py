@@ -1,17 +1,72 @@
 from bokeh.plotting import figure
 from bokeh.models.callbacks import CustomJS
-from bokeh.layouts import row, column
-from bokeh.models.widgets import RadioGroup
+from bokeh.layouts import column, row
+from bokeh.models.widgets import RadioButtonGroup, Slider
 
-class InteractivePlot(object):
 
-    def __init__(self, data=dict(x=[], y=[])):
-        self.figure = figure(x_range=(0,10), y_range=(0,10), toolbar_location=None)
-        self._initialize_figure(data)
+X_RANGE = Y_RANGE = (-5, 10)
 
-    def _initialize_figure(self, data):
-        self.scatter = self.figure.scatter(**data)
-        data_source = self.scatter.data_source
+
+class BaseInteractivePlot(object):
+
+    BASE_FIGURE_PARAMS = dict(
+        x_range = X_RANGE,
+        y_range = Y_RANGE,
+        tools = "",
+        toolbar_location = None
+    )
+
+    def __init__(self, **figure_params):
+        self.figure = figure(**{**self.BASE_FIGURE_PARAMS, **figure_params})
+
+        self._change_listeners = []
+        self._data_template = {}
+
+        self._setup_plot()
+
+    def _setup_plot(self):
+        pass
+
+    def _handle_state_change(self, attr, new, old):
+        state = self.get_state()
+        for listener in self._change_listeners:
+            listener(state)
+
+    def register_state_attribute(self, name, model, attribute, prefix=[]):
+        model.on_change(attribute, self._handle_state_change)
+
+        template = self._data_template
+        for pre in prefix:
+            if pre not in template:
+                template[pre] = {}
+            template = template[pre]
+
+        template[name] = lambda: model.__getattribute__(attribute)
+
+    def get_state(self):
+        def evaluate_state(node):
+            if type(node) is not dict:
+                return node()
+            else:
+                return {
+                    name: evaluate_state(child) for name, child in node.items()
+                }
+        return evaluate_state(self._data_template)
+
+    def add_change_listener(self, listener):
+        self._change_listeners.append(listener)
+
+    def drawable(self):
+        return self.figure
+
+
+class SingleClassPlot(BaseInteractivePlot):
+
+    def _setup_plot(self):
+        self._scatter = self.figure.scatter(x=[], y=[])
+
+    def enable_interaction(self):
+        data_source = self._scatter.data_source
         self.figure.js_on_event('tap', CustomJS(args=dict(source=data_source), code="""
             var data = {
                 'x': source.data.x,
@@ -22,69 +77,60 @@ class InteractivePlot(object):
             source.data = data;
             source.change.emit();
         """))
-        self.initialize_figure(self.figure, self.scatter)
-        data_source.on_change('data', self._update_figure)
+        self.register_state_attribute('inputs', data_source, 'data')
 
-    def initialize_figure(self, figure, scatter):
-        pass
 
-    def update_figure(self, figure, scatter, new_data, old_data):
-        pass
+class MultiClassPlot(BaseInteractivePlot):
 
-    def _update_figure(self, attr, old, new):
-        self.update_figure(self.figure, self.scatter, new, old)
+    def _setup_plot(self):
+        self._scatters = {}
 
-    def render(self, doc):
-        doc.add_root(self.figure)
+    def add_scatter(self, name, **scatter_opts):
+        self._scatters[name] = self.figure.scatter(**scatter_opts)
 
-class InteractiveParametricPlot(InteractivePlot):
-
-    def __init__(self, data=dict(x=[], y=[])):
-        self.params = self.parameters()
-        for name, param in self.params.items():
-            param.on_change('value', self.update_param)
-        super().__init__(data)
-
-    def update_param(self, attr, old, new):
-        self.update_figure(self.figure, self.scatter, new, old)
-
-    def parameters(self):
-        return {}
-
-    def render(self, doc):
-        doc.add_root(row(self.figure, column(*self.params.values())))
-
-class MulticlassParametricPlot(InteractiveParametricPlot):
-
-    def _initialize_figure(self, data):
-        self.scatters = self.make_scatters(data)
-        radiokeys = list(self.scatters.keys())
-        self.which_scatter = RadioGroup(labels=radiokeys, active=0)
+    def enable_interaction(self):
+        radiokeys = list(self._scatters.keys())
+        self._which_scatter = RadioButtonGroup(labels=radiokeys, active=0)
         data_sources = {
             key: scatter.data_source
-            for key, scatter in self.scatters.items()
+            for key, scatter in self._scatters.items()
         }
-        self.figure.js_on_event('tap', CustomJS(args=dict(which_scatter=self.which_scatter, **data_sources), code="""
-            var argdict = {};
-            var scatter = argdict[which_scatter.active];
-            var data = {{
-                'x': scatter.data.x,
-                'y': scatter.data.y
-            }};
-            data['x'].push(cb_obj['x']);
-            data['y'].push(cb_obj['y']);
-            scatter.data = data;
-            scatter.change.emit();
-        """.format('{{{}}}'.format(','.join(["{}: {}".format(i, k) for i, k in enumerate(radiokeys)])))))
-        self.initialize_figure(self.figure, self.scatters)
-        for scatter in self.scatters.values():
-            scatter.data_source.on_change('data', self._update_figure)
+        js_argdict = f"""{{
+            { ','.join(f"{i}: {k}" for i, k in enumerate(radiokeys)) }
+        }}"""
+        self.figure.js_on_event('tap', CustomJS(
+            args=dict(which_scatter=self._which_scatter, **data_sources),
+            code=f"""
+                var argdict = {js_argdict};
+                var scatter = argdict[which_scatter.active];
+                var data = {{
+                    'x': scatter.data.x,
+                    'y': scatter.data.y
+                }};
+                data['x'].push(cb_obj['x']);
+                data['y'].push(cb_obj['y']);
+                scatter.data = data;
+                scatter.change.emit();
+            """
+        ))
 
-    def _update_figure(self, attr, old, new):
-        self.update_figure(self.figure, self.scatters, new, old)
+        for source_name, data_source in data_sources.items():
+            self.register_state_attribute(source_name, data_source, 'data', prefix=['inputs'])
 
-    def make_scatters(self, data):
-        return {}
+    def drawable(self):
+        return column(self._which_scatter, self.figure)
 
-    def render(self, doc):
-        doc.add_root(row(self.figure, column(self.which_scatter, *self.params.values())))
+
+class ParametricPlotContainer(object):
+
+    def __init__(self, plot):
+        self._plot = plot
+        self._params = []
+
+    def slider(self, title, **slider_params):
+        slider = Slider(title=title, **slider_params)
+        self._params.append(slider)
+        self._plot.register_state_attribute(title, slider, 'value')
+
+    def drawable(self):
+        return row(self._plot.drawable(), column(*self._params))

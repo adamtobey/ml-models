@@ -10,7 +10,9 @@ from plots import InteractivePolynomialRegression, InteractiveGaussianProcess, I
 
 
 HTTP_PORT = int(os.environ.get("PORT", 8000))
-HOST_URL = os.environ.get("HOST_URL", "http://localhost:{}".format(HTTP_PORT))
+HOSTNAME = os.environ.get("HOSTNAME", "localhost:{}".format(HTTP_PORT))
+HOST_PROTOCOL = os.environ.get("HOST_PROTOCOL", "http")
+HOST_URL = "{}://{}".format(HOST_PROTOCOL, HOSTNAME)
 
 env = Environment(loader=FileSystemLoader("templates"))
 
@@ -52,7 +54,7 @@ server = Server(
     bokeh_routes,
     extra_patterns=list(page_routes.items()),
     port=HTTP_PORT,
-    allow_websocket_origin=["calm-cliffs-70784.herokuapp.com"]
+    allow_websocket_origin=[HOSTNAME]
 )
 server.start()
 
