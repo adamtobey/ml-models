@@ -50,6 +50,13 @@ for route, (name, Plot) in plot_pages.items():
     bokeh_routes[bokeh_route(route)] = make_bokeh_route(Plot)
     page_routes[page_route(route)] = make_page_route(name, route)
 
+class AboutPage(RequestHandler):
+    def get(self):
+        template = env.get_template("about.html")
+        self.write(template.render(routes=plot_pages))
+
+page_routes["/"] = AboutPage
+
 server = Server(
     bokeh_routes,
     extra_patterns=list(page_routes.items()),

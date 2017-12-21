@@ -1,23 +1,9 @@
-<!doctype html>
+{% extends "base.html" %}
 
-<html lang="en">
-<head>
-  <meta charset="utf-8">
+{% block head %}
   <title>{{ model_name }}</title>
-</head>
+{% endblock %}
 
-<body>
-  <div>
-    <ul>
-      {% for route, (name, _) in routes.items() %}
-        <li>
-          <a href="{{ route }}">{{ name|escape }}</a>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
-  <div>
-    {{ script|safe }}
-  </div>
-</body>
-</html>
+{% block content %}
+  {{ script|safe }}
+{% endblock %}
