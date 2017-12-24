@@ -2,3 +2,4 @@ from plots.bayesian_polynomial_regression import InteractiveBayesianPolynomialRe
 from plots.polynomial_regression import InteractivePolynomialRegression
 from plots.gaussian_process import InteractiveGaussianProcess
 from plots.logistic_regression import InteractiveLogisticRegression
+from plots.logistic_regression_cost import LogisticRegressionCostPlot

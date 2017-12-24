@@ -4,7 +4,7 @@ from plotting import SingleClassPlot, ParametricPlotContainer, X_RANGE
 from linear_basis_functions import ScalarBasisFunctions
 from models.linear_regression import LinearRegression
 
-class InteractivePolynomialRegression(SingleClassPlot):
+class InteractivePolynomialRegression(object):
 
     PLOT_POINTS = 150
 

@@ -3,7 +3,7 @@ import numpy as np
 from plotting import SingleClassPlot, ParametricPlotContainer, X_RANGE
 from models.gaussian_process import GaussianProcessRegression, Kernels
 
-class InteractiveGaussianProcess(SingleClassPlot):
+class InteractiveGaussianProcess(object):
 
     PLOT_POINTS = 150
 

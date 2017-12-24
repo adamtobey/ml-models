@@ -6,7 +6,7 @@ from tornado.web import RequestHandler
 from bokeh.embed import server_document
 from bokeh.server.server import Server
 
-from plots import InteractivePolynomialRegression, InteractiveGaussianProcess, InteractiveBayesianPolynomialRegression, InteractiveLogisticRegression
+from plots import InteractivePolynomialRegression, InteractiveGaussianProcess, InteractiveBayesianPolynomialRegression, InteractiveLogisticRegression, LogisticRegressionCostPlot
 
 
 HTTP_PORT = int(os.environ.get("PORT", 8000))
@@ -20,7 +20,8 @@ plot_pages = dict(
     linear_regression=("Polynomial Regression", InteractivePolynomialRegression),
     gaussian_process=("Gaussian Process Regression", InteractiveGaussianProcess),
     bayesian_linear_regression=("Bayesian Polynomial Regression", InteractiveBayesianPolynomialRegression),
-    logistic_regression=("Logistic Regression", InteractiveLogisticRegression)
+    logistic_regression=("Logistic Regression", InteractiveLogisticRegression),
+    logistic_regression_cost=("Logistic Regression Cost", LogisticRegressionCostPlot)
 )
 
 bokeh_routes = {}

@@ -1,10 +1,22 @@
 import numpy as np
 
-from bokeh.models.widgets import Slider
-
 from plotting import MultiClassPlot, X_RANGE
 from linear_basis_functions import ScalarBasisFunctions
 from models.logistic_regression import LogisticRegression
+
+def plot_state_to_model_data(plot_state):
+    X = []
+    y = []
+    for clas, data in enumerate(plot_state['inputs'].values()):
+        X.extend([
+            [x, y] for x, y in zip(data['x'], data['y'])
+        ])
+        y.extend([
+            clas for _ in range(len(data['x']))
+        ])
+    X = np.array(X)
+    y = np.array(y)
+    return X, y
 
 class InteractiveLogisticRegression(object):
 
@@ -19,22 +31,9 @@ class InteractiveLogisticRegression(object):
         self.plot.add_change_listener(self.update_plot)
         self.plot.enable_interaction()
 
-    def plot_state_to_model_data(self, plot_state):
-        X = []
-        y = []
-        for clas, data in enumerate(plot_state['inputs'].values()):
-            X.extend([
-                [x, y] for x, y in zip(data['x'], data['y'])
-            ])
-            y.extend([
-                clas for _ in range(len(data['x']))
-            ])
-        X = np.array(X)
-        y = np.array(y)
-        return X, y
 
     def update_plot(self, plot_state):
-        X, y = self.plot_state_to_model_data(plot_state)
+        X, y = plot_state_to_model_data(plot_state)
 
         if X.shape[0] != 0:
             classifier = LogisticRegression()
