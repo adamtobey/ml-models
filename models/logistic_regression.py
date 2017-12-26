@@ -22,8 +22,6 @@ class LogisticRegressionCost(Function):
         def single_hessian(x, t, w):
             z = 2 * t - 1
             a = np.exp(-z * w.dot(x)) # TODO sometimes explodes
-            print("x, t, w", x, t, w)
-            print("a", a)
             diag = np.ones(x.shape) * z * (a**2 + a + epsilon) / ((1 + a)**2 + epsilon)
             return np.outer(x, x) * a / ((1 + a)**2 + epsilon) + np.diag(diag)
         return sum(single_hessian(x, t, w) for x, t in zip(X, t))
