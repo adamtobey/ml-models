@@ -1,31 +1,43 @@
 import numpy as np
-from optimizers import GradientDescentOptimizer
+from optimizers import NewtonsMethod, Function
 from linear_basis_functions import BasisFunctions
 
-class LogisticRegression(object):
-
-    def __init__(self, optimizer=GradientDescentOptimizer(learning_rate=0.1), basis_function=BasisFunctions.Affine()):
-        self.optimizer = optimizer
-        self.weights = None
-        self.weights_init = lambda d: np.random.rand(d) * 0.1
-        self.basis_function = basis_function
+class LogisticRegressionCost(Function):
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def cost(self, batch, targets, weights):
-        affine = batch.dot(weights)
-        z = 2 * targets - 1
+    def eval(self, X, t, w):
+        affine = X.dot(w)
+        z = 2 * t - 1
         return -np.sum(np.log(self.sigmoid(z * affine)), axis=0)
 
-    def cost_grad(self, batch, targets, weights):
-        z = 2 * targets - 1
-        sn = self.sigmoid(z * batch.dot(weights))
-        return -np.sum(((1 - sn) * z).reshape(-1, 1) * batch, axis=0)
+    def gradient(self, X, t, w):
+        z = 2 * t - 1
+        sn = self.sigmoid(z * X.dot(w))
+        return -np.sum(((1 - sn) * z).reshape(-1, 1) * X, axis=0)
+
+    def hessian(self, X, t, w):
+        epsilon = 1e-6 # avoid dividing by zero
+        def single_hessian(x, t, w):
+            z = 2 * t - 1
+            a = np.exp(-z * w.dot(x)) # TODO sometimes explodes
+            diag = np.ones(x.shape) * z * (a**2 + a + epsilon) / ((1 + a)**2 + epsilon)
+            return np.outer(x, x) * a / ((1 + a)**2 + epsilon) + np.diag(diag)
+        return sum(single_hessian(x, t, w) for x, t in zip(X, t))
+
+class LogisticRegression(object):
+
+    def __init__(self, basis_function=BasisFunctions.Affine(), optimizer=NewtonsMethod()):
+        self.optimizer = optimizer
+        self.weights = None
+        self.weights_init = lambda d: np.random.rand(d) * 0.1
+        self.basis_function = basis_function
+        self.cost = LogisticRegressionCost()
 
     def fit(self, X, y, num_epochs):
         X = self.basis_function(X)
-        self.weights = self.optimizer.opt(X, y, self.weights_init(X.shape[1]), self.cost, self.cost_grad, num_epochs)
+        self.weights = self.optimizer.opt(self.cost, X, y, self.weights_init(X.shape[1]))
 
     def predict(self, X):
         assert self.weights is not None, "Model must be trained before predicting"
