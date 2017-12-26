@@ -36,5 +36,7 @@ class NewtonsMethod(object):
             grad = function.gradient(X, y, weights)
             hess = function.hessian(X, y, weights)
             weights -= np.linalg.inv(hess).dot(grad)
+            print("weights: ", weights)
+            print("grad mag: ", np.sum(grad**2))
             if np.sum(grad**2) < self.gradient_stop_magnitude:
                 return weights
