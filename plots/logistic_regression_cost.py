@@ -6,7 +6,7 @@ from bokeh.layouts import column
 
 from plotting import MultiClassPlot, ParametricPlotContainer, X_RANGE, Y_RANGE, BaseInteractivePlot
 from models.logistic_regression import LogisticRegression
-from plots.logistic_regression import plot_state_to_model_data
+from plots.logistic_regression import plot_state_to_model_data, calculate_line_endpoints
 from linear_basis_functions import BasisFunctions
 
 class LogisticRegressionCostPlot(object):
@@ -84,29 +84,17 @@ class LogisticRegressionCostPlot(object):
         y_plot = self.cost(X, y, W)
         plot.data_source.data = dict(x=x_plot, y=y_plot)
 
-    def calculate_line_endpoints(self, angle, origin):
-        angle = self.deg_to_rad(angle % 180)
-        l1, l2 = math.cos(angle), math.sin(angle)
-        x0, y0 = origin
-        b1, b2 = X_RANGE[1], Y_RANGE[1]
-        c1, c2 = X_RANGE[0], Y_RANGE[0]
-        if l2 * (b1 - x0) > l1 * (b2 - y0):
-            t = (np.array([b1, c1]) - y0) / l2
-        else:
-            t = (np.array([b2, c2]) - x0) / l1
-        return l1 * t + x0, l2 * t + y0
-
     def update_plot(self, plot_state):
-        # for key in self.EXPLORE_PLOT_KEYS:
-        #     self.explore_plots[key][1].data_source.data = dict(
-        #         x=[plot_state[key], plot_state[key]],
-        #         y=[*Y_RANGE]
-        #     )
-        #     if self.cache[key] == plot_state[key]:
-        #         self.update_explore_plot(key, plot_state)
-        # self.cache = {
-        #     key: plot_state[key] for key in self.EXPLORE_PLOT_KEYS
-        # }
+        for key in self.EXPLORE_PLOT_KEYS:
+            self.explore_plots[key][1].data_source.data = dict(
+                x=[plot_state[key], plot_state[key]],
+                y=[*Y_RANGE]
+            )
+            if self.cache[key] == plot_state[key]:
+                self.update_explore_plot(key, plot_state)
+        self.cache = {
+            key: plot_state[key] for key in self.EXPLORE_PLOT_KEYS
+        }
 
         # w2 = math.sqrt(self.ALPHA / (plot_state["Confidence Interval"] * (1 + math.tan(theta))))
 
@@ -120,7 +108,7 @@ class LogisticRegressionCostPlot(object):
             (self.decision_boundary, decision_origin),
             (self.red_side, decision_origin + offset)
         ]:
-            x, y = self.calculate_line_endpoints(plot_state["Line Angle"], origin)
+            x, y = calculate_line_endpoints(plot_state["Line Angle"], origin)
             plot.data_source.data = dict(x=x, y=y)
 
     def render(self, doc):
