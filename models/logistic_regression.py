@@ -51,7 +51,8 @@ class LogisticRegression(object):
         self.weights = None
         self.weights_init = lambda d: np.random.rand(d) * 0.1
         self.basis_function = basis_function
-        self.cost = LogisticRegressionCost()
+        # self.cost = LogisticRegressionCost()
+        self.cost = RefLRC()
 
     def fit(self, X, y, num_epochs):
         X = self.basis_function(X)
