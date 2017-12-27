@@ -9,10 +9,13 @@ class LogisticRegressionCost(Function):
         z = 2 * t - 1
         return np.sum(np.log(1 + z * affine), axis=0)
 
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
     def gradient(self, X, t, w):
         z = 2 * t - 1
-        a = z * X.dot(w)
-        return -np.sum((z / (np.exp(-a) + 1)).reshape(-1, 1) * X, axis=0)
+        sn = self.sigmoid(z * X.dot(w))
+        return -np.sum(((1 - sn) * z).reshape(-1, 1) * X, axis=0)
 
     def hessian(self, X, t, w):
         def single_hessian(x, t, w):
@@ -46,7 +49,7 @@ class RefLRC(Function):
 
 class LogisticRegression(object):
 
-    def __init__(self, basis_function=BasisFunctions.Affine(), optimizer=GradientDescentOptimizer(5e-3, 1000)):
+    def __init__(self, basis_function=BasisFunctions.Affine(), optimizer=NewtonsMethod(5e-3)):
         self.optimizer = optimizer
         self.weights = None
         self.weights_init = lambda d: np.random.rand(d) * 0.1
