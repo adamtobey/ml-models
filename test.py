@@ -1,8 +1,5 @@
 import numpy as np
-<<<<<<< HEAD
-=======
 from calculus import gradient
->>>>>>> 4e75448... wip
 from models.logistic_regression import LogisticRegressionCost, RefLRC
 
 x = np.arange(4).reshape((2,2))
@@ -11,12 +8,12 @@ w = y = np.arange(2)
 r = RefLRC()
 t = LogisticRegressionCost()
 
-<<<<<<< HEAD
-=======
-anal =
+ag = gradient(lambda x: t.eval(x, y, w), x)
+ah = gradient(lambda x: t.gradient(x, y, w), x)
 
->>>>>>> 4e75448... wip
+print("Anal gradient: ", ag)
 print("Ref gradient: ", r.gradient(x, y, w))
 print("Test gradient: ", t.gradient(x, y, w))
+print("Anal hessian: ", ah)
 print("Ref hessian: ", r.hessian(x, y, w))
 print("Test hessian: ", t.hessian(x, y, w))

@@ -28,15 +28,19 @@ class NewtonsMethod(object):
 
     def __init__(self, gradient_stop_magnitude=1e-2, max_updates=500):
         self.gradient_stop_magnitude = gradient_stop_magnitude
+        print(self.gradient_stop_magnitude)
         self.max_updates = max_updates
 
     def opt(self, function, X, y, weights_init):
         weights = weights_init
         for i in range(self.max_updates):
+            print(i)
             grad = function.gradient(X, y, weights)
             hess = function.hessian(X, y, weights)
+            print(grad, hess)
             weights -= np.linalg.inv(hess).dot(grad)
-            print("weights: ", weights)
-            print("grad mag: ", np.sum(grad**2))
-            if np.sum(grad**2) < self.gradient_stop_magnitude:
+            print("grad mag: ", np.sum(grad**2)**0.5, "weights mag", np.sum(weights**2)**0.5)
+            if np.sum(grad**2)**0.5 < self.gradient_stop_magnitude:
                 return weights
+        print("Max updates")
+        return weights
