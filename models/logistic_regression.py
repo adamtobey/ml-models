@@ -8,7 +8,7 @@ class LogisticRegressionCost(Function):
     def eval(self, X, t, w):
         affine = X.dot(w)
         z = 2 * t - 1
-        return np.sum(np.log(1 + z * affine), axis=0)
+        return -np.sum(np.log(self.sigmoid(z * affine)), axis=0)
 
     def sigmoid(self, x):
         def sig(x):

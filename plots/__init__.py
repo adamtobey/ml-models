@@ -3,3 +3,4 @@ from plots.polynomial_regression import InteractivePolynomialRegression
 from plots.gaussian_process import InteractiveGaussianProcess
 from plots.logistic_regression import InteractiveLogisticRegression
 from plots.logistic_regression_cost import LogisticRegressionCostPlot
+from plots.logistic_regression_cost_one_d import LogisticRegressionCost1D
