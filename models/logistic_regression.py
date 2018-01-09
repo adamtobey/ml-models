@@ -1,5 +1,5 @@
 import numpy as np
-from optimizers import Function, GradientDescentOptimizer
+from optimizers import Function, MomentumOptimizer
 from linear_basis_functions import BasisFunctions
 
 class LogisticRegressionCost(Function):
@@ -43,7 +43,7 @@ class LogisticRegressionCost(Function):
 
 class LogisticRegression(object):
 
-    def __init__(self, basis_function=BasisFunctions.Affine(), optimizer=GradientDescentOptimizer(learning_rate=1e-1, num_epochs=1000)):
+    def __init__(self, basis_function=BasisFunctions.Affine(), optimizer=MomentumOptimizer(learning_rate=1e-2, num_epochs=1000)):
         self.optimizer = optimizer
         self.weights = None
         self.weights_init = lambda d: np.random.rand(d) * 0.1

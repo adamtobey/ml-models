@@ -11,6 +11,22 @@ class Function(object):
     def hessian(self, X, y, w):
         raise NotImplemented
 
+class MomentumOptimizer(object):
+
+    def __init__(self, learning_rate, num_epochs, momentum=0.9):
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.num_epochs = num_epochs
+
+    def opt(self, function, X, y, weights_init):
+        weights = weights_init
+        dw = 0
+        for epoch in range(self.num_epochs):
+            grad = function.gradient(X, y, weights)
+            dw = self.momentum * dw - self.learning_rate * grad
+            weights += dw
+        return weights
+
 class GradientDescentOptimizer(object):
 
     def __init__(self, learning_rate, num_epochs):
