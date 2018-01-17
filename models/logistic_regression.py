@@ -2,24 +2,24 @@ import numpy as np
 from optimizers import Function, MomentumOptimizer
 from linear_basis_functions import BasisFunctions
 
+def sigmoid(x):
+    def sig(x):
+        return 1 / (1 + np.exp(-x))
+    out = np.ndarray(x.size)
+    out[x > 0] = sig(x[x > 0])
+    out[x < 0] = 1 - sig(-x[x < 0])
+    return out
+
 class LogisticRegressionCost(Function):
 
     def eval(self, X, t, w):
         affine = X.dot(w)
         z = 2 * t - 1
-        return -np.sum(np.log(self.sigmoid(z * affine)), axis=0)
-
-    def sigmoid(self, x):
-        def sig(x):
-            return 1 / (1 + np.exp(-x))
-        out = np.ndarray(x.size)
-        out[x > 0] = sig(x[x > 0])
-        out[x < 0] = 1 - sig(-x[x < 0])
-        return out
+        return -np.sum(np.log(sigmoid(z * affine)), axis=0)
 
     def gradient(self, X, t, w):
         z = 2 * t - 1
-        sn = self.sigmoid(z * X.dot(w))
+        sn = sigmoid(z * X.dot(w))
         return -np.sum(((1 - sn) * z).reshape(-1, 1) * X, axis=0)
 
     # for Newton's method -- have to be careful about this since
@@ -56,4 +56,4 @@ class LogisticRegression(object):
 
     def predict(self, X):
         assert self.weights is not None, "Model must be trained before predicting"
-        return self.sigmoid(self.basis_function(X).dot(self.weights))
+        return sigmoid(self.basis_function(X).dot(self.weights))

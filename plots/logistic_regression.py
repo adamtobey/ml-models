@@ -19,12 +19,12 @@ def plot_state_to_model_data(plot_state):
     y = np.array(y)
     return X, y
 
-def tangent_to_angle(t1, t2):
+# restricted to Q1,2
+def restricted_angle_from_tangent(t1, t2):
     h = (t1**2 + t2**2)**0.5
-    if t1 > t2:
-        return rad_to_deg(math.acos(t1 / h))
-    else:
-        return rad_to_deg(math.asin(t2 / h))
+    if t2 < 0:
+        t1, t2 = -t1, -t2
+    return rad_to_deg(math.acos(t1 / h))
 
 def rad_to_deg(x):
     return 180 * x / np.pi
@@ -72,7 +72,7 @@ class InteractiveLogisticRegression(object):
             b, w1, w2 = classifier.weights
 
             origin = (0, -b / w2)
-            angle = tangent_to_angle(-w2, w1)
+            angle = restricted_angle_from_tangent(-w2, w1)
             theta = deg_to_rad(angle)
 
             delta = np.array([w1, w2]) * self.ALPHA * (math.sin(theta) + math.cos(theta)) / (w1**2 + w2**2)
