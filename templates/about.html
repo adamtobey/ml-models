@@ -6,12 +6,17 @@
 
 {% block content %}
 
-<p>
-  This website is an attempt to graphically demonstrate the properties of a few different basic machine learning models. I've implemented linear regression in both discriminitive and generative (Bayesian) varieties, logistic regression, and Gaussian process regression. Each model has a corresponding interactive plot that tries to show some intrinsic properties of that model as well as how its hyperparameters affect the family of functions it can represent, if applicable. To interact with the plots, simply click to add a point. For the multi-class plot for logistic regression, select the class of point to add with the buttons above the plot.
-</p>
+<div class="main-text-container">
 
-<p>
-  For this project, I make heavy use of numpy and bokeh. The models are implemented from scratch with numpy. The plots are powered by bokeh. <a href="https://github.com/adamtobey/ml-models">Check out the implementation on Github.</a>
-</p>
+  <h2>What's this site about?</h2>
+
+  <p>
+    This site is designed to provide a visual intuition for what a few common machine learning models do and how their parameters influence that behavior. All the models are implemented from scratch using numpy with the guiding principle to keep the implementation at the level of linear algebra, or in other words, no for loops allowed! <a href="https://github.com/adamtobey/ml-models">Check out the implementation on Github.</a>
+  </p>
+
+  <p>
+  Check out the available plots in the navigation bar. Click on any plot to add a point and watch the model update accordingly. Some plots have sliders to adjust parameters, which will also update the model.
+  </p>
+</div>
 
 {% endblock %}

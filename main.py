@@ -17,12 +17,11 @@ HOST_URL = "{}://{}".format(HOST_PROTOCOL, HOSTNAME)
 env = Environment(loader=FileSystemLoader("templates"))
 
 plot_pages = dict(
-    linear_regression=("Polynomial Regression", InteractivePolynomialRegression),
-    gaussian_process=("Gaussian Process Regression", InteractiveGaussianProcess),
-    bayesian_linear_regression=("Bayesian Polynomial Regression", InteractiveBayesianPolynomialRegression),
-    logistic_regression=("Logistic Regression", InteractiveLogisticRegression),
-    logistic_regression_cost=("Logistic Regression Cost", LogisticRegressionCostPlot),
-    logistic_regression_cost_1_d=("1D Logistic Regression Cost", LogisticRegressionCost1D)
+    linear_regression=("Polynomial", InteractivePolynomialRegression),
+    gaussian_process=("Gaussian Process", InteractiveGaussianProcess),
+    bayesian_linear_regression=("Bayesian Polynomial", InteractiveBayesianPolynomialRegression),
+    logistic_regression=("Logistic", InteractiveLogisticRegression),
+    logistic_regression_cost_1_d=("Logistic Cost", LogisticRegressionCost1D)
 )
 
 bokeh_routes = {}
