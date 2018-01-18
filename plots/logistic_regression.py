@@ -19,21 +19,16 @@ def plot_state_to_model_data(plot_state):
     y = np.array(y)
     return X, y
 
-# restricted to Q1,2
-def restricted_angle_from_tangent(t1, t2):
+def angle_from_tangent(t1, t2):
     h = (t1**2 + t2**2)**0.5
+    offset = 0
     if t2 < 0:
         t1, t2 = -t1, -t2
-    return rad_to_deg(math.acos(t1 / h))
-
-def rad_to_deg(x):
-    return 180 * x / np.pi
-
-def deg_to_rad(x):
-    return np.pi * x / 180
+        offset = np.pi
+    return math.acos(t1 / h) + offset
 
 def calculate_line_endpoints(angle, origin, x_range=X_RANGE, y_range=Y_RANGE):
-    angle = deg_to_rad(angle % 180)
+    angle = angle % np.pi
     l1, l2 = math.cos(angle), math.sin(angle)
     x0, y0 = origin
     b1, b2 = x_range[1], y_range[1]
@@ -72,10 +67,9 @@ class InteractiveLogisticRegression(object):
             b, w1, w2 = classifier.weights
 
             origin = (0, -b / w2)
-            angle = restricted_angle_from_tangent(-w2, w1)
-            theta = deg_to_rad(angle)
+            angle = angle_from_tangent(-w2, w1)
 
-            delta = np.array([w1, w2]) * self.ALPHA * (math.sin(theta) + math.cos(theta)) / (w1**2 + w2**2)
+            delta = np.array([w1, w2]) * self.ALPHA * (math.sin(angle) + math.cos(angle)) / (w1**2 + w2**2)
 
             x_red, y_red = calculate_line_endpoints(angle, origin - delta)
             x_decision, y_decision = calculate_line_endpoints(angle, origin)
