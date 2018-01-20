@@ -66,10 +66,10 @@ class InteractiveLogisticRegression(object):
 
             b, w1, w2 = classifier.weights
 
-            origin = (0, -b / w2)
+            origin = np.array([0, -b / w2])
             angle = angle_from_tangent(-w2, w1)
 
-            delta = np.array([w1, w2]) * self.ALPHA * (math.sin(angle) + math.cos(angle)) / (w1**2 + w2**2)
+            delta = np.array([0, self.ALPHA / w2])
 
             x_red, y_red = calculate_line_endpoints(angle, origin - delta)
             x_decision, y_decision = calculate_line_endpoints(angle, origin)
